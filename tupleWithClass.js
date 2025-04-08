@@ -1,6 +1,16 @@
 #!/usr/bin/env node
 
+// Define a tuple type
+// type Point = readonly [number, number];
 
+// // Create a tuple
+// const point: Point = [10, 20];
+
+// // Access elements
+// console.log(point[0]); // 10
+
+// This would cause a compile-time error
+// point[0] = 99;
 
 
 // const myAr = Object.freeze(['a', 10, 'g'])
@@ -45,4 +55,3 @@ class Tuple {
   console.log(person[0]); // "John"
   console.log(person.toString()); // "(John, 30, Developer)"
   console.log([...person])
-  
