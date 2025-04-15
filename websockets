@@ -1,0 +1,177 @@
+// ================ CLIENT SIDE CODE ================
+// HTML file with a simple interface
+// index.html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>WebSocket Example</title>
+    <style>
+        body { font-family: Arial, sans-serif; max-width: 800px; margin: 0 auto; padding: 20px; }
+        #messages { border: 1px solid #ccc; padding: 10px; height: 300px; overflow-y: auto; margin-bottom: 10px; }
+        #message-form { display: flex; }
+        #message-input { flex-grow: 1; padding: 8px; margin-right: 10px; }
+        button { padding: 8px 16px; background: #4CAF50; color: white; border: none; cursor: pointer; }
+        button:hover { background: #45a049; }
+        .status { margin-bottom: 10px; font-style: italic; }
+    </style>
+</head>
+<body>
+    <h1>WebSocket Chat Example</h1>
+    <div class="status" id="connection-status">Status: Disconnected</div>
+    <div id="messages"></div>
+    <form id="message-form">
+        <input type="text" id="message-input" placeholder="Type a message..." autocomplete="off">
+        <button type="submit">Send</button>
+    </form>
+
+    <script src="client.js"></script>
+</body>
+</html>
+
+// ================ CLIENT JAVASCRIPT ================
+// client.js
+document.addEventListener('DOMContentLoaded', () => {
+    const statusDisplay = document.getElementById('connection-status');
+    const messagesContainer = document.getElementById('messages');
+    const messageForm = document.getElementById('message-form');
+    const messageInput = document.getElementById('message-input');
+    
+    // Create a new WebSocket connection
+    // Note: Replace 'ws://localhost:8080' with your actual WebSocket server address
+    const socket = new WebSocket('ws://localhost:8080');
+    
+    // Connection opened
+    socket.addEventListener('open', (event) => {
+        statusDisplay.textContent = 'Status: Connected';
+        statusDisplay.style.color = 'green';
+        
+        addMessageToChat('System', 'Connected to the chat server');
+    });
+    
+    // Listen for messages
+    socket.addEventListener('message', (event) => {
+        const message = JSON.parse(event.data);
+        addMessageToChat(message.sender, message.text);
+    });
+    
+    // Connection closed
+    socket.addEventListener('close', (event) => {
+        statusDisplay.textContent = 'Status: Disconnected';
+        statusDisplay.style.color = 'red';
+        
+        addMessageToChat('System', 'Disconnected from the chat server');
+    });
+    
+    // Connection error
+    socket.addEventListener('error', (event) => {
+        statusDisplay.textContent = 'Status: Error occurred';
+        statusDisplay.style.color = 'red';
+        
+        addMessageToChat('System', 'WebSocket error occurred');
+        console.error('WebSocket error:', event);
+    });
+    
+    // Send message
+    messageForm.addEventListener('submit', (e) => {
+        e.preventDefault();
+        
+        const messageText = messageInput.value.trim();
+        if (messageText && socket.readyState === WebSocket.OPEN) {
+            // Send the message as JSON
+            socket.send(JSON.stringify({
+                sender: 'You',
+                text: messageText
+            }));
+            
+            // Clear the input
+            messageInput.value = '';
+        }
+    });
+    
+    // Helper function to add messages to the chat display
+    function addMessageToChat(sender, text) {
+        const messageElement = document.createElement('div');
+        messageElement.innerHTML = `<strong>${sender}:</strong> ${text}`;
+        messagesContainer.appendChild(messageElement);
+        
+        // Auto-scroll to the bottom
+        messagesContainer.scrollTop = messagesContainer.scrollHeight;
+    }
+});
+
+// ================ SERVER SIDE CODE ================
+// server.js (Node.js with ws library)
+// To run this server: npm install ws && node server.js
+
+const WebSocket = require('ws');
+
+// Create a WebSocket server instance
+const wss = new WebSocket.Server({ port: 8080 });
+
+// Keep track of all connected clients
+const clients = new Set();
+
+console.log('WebSocket server is running on port 8080');
+
+// Handle new connections
+wss.on('connection', (ws) => {
+    // Add new client to the set
+    clients.add(ws);
+    console.log('New client connected. Total clients:', clients.size);
+    
+    // Send welcome message to the new client
+    ws.send(JSON.stringify({
+        sender: 'Server',
+        text: 'Welcome to the chat! There are ' + clients.size + ' users online.'
+    }));
+    
+    // Broadcast to all clients that a new user joined
+    broadcast({
+        sender: 'Server',
+        text: 'A new user joined the chat!'
+    }, ws); // Exclude the sender
+    
+    // Handle incoming messages
+    ws.on('message', (message) => {
+        try {
+            const parsedMessage = JSON.parse(message);
+            console.log('Received message:', parsedMessage);
+            
+            // Broadcast the message to all clients
+            broadcast(parsedMessage);
+        } catch (error) {
+            console.error('Error parsing message:', error);
+        }
+    });
+    
+    // Handle client disconnection
+    ws.on('close', () => {
+        clients.delete(ws);
+        console.log('Client disconnected. Total clients:', clients.size);
+        
+        // Broadcast to remaining clients
+        broadcast({
+            sender: 'Server',
+            text: 'A user has left the chat.'
+        });
+    });
+    
+    // Handle errors
+    ws.on('error', (error) => {
+        console.error('WebSocket error:', error);
+        clients.delete(ws);
+    });
+});
+
+// Broadcast message to all connected clients
+function broadcast(message, exclude = null) {
+    const messageStr = JSON.stringify(message);
+    
+    clients.forEach((client) => {
+        // Send to all clients except the excluded one (if provided)
+        if (client !== exclude && client.readyState === WebSocket.OPEN) {
+            client.send(messageStr);
+        }
+    });
+}
