@@ -1,5 +1,5 @@
-// Charles, here is the improved version
-// no AI was used, only my ideas.
+// Here is the improved version
+// Only my ideas were used.
 function longestChain(words) {
   const chainMap = {}
   
