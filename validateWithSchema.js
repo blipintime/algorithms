@@ -111,4 +111,4 @@ function validate(employees, schema) {
 
 const result = validate(acmeCorp, acmeSchema.employee);
 console.log('ok:', result.ok);
-console.log('message:', result.message);
+console.log('message:', result.message)
