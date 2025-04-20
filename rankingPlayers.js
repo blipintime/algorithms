@@ -3,19 +3,11 @@
 function rankPlayers(ranked, player) {
   const results = []
   const rankings = [...ranked]
+  
   function calculateCurrentRanking(score) {
-    const rankMap = {}
-    let rankCounter = 0
-    for(let j=0; j<rankings.length; j++) {
-      const currScore = rankings[j]
-      if (rankMap[currScore] === undefined) {
-        rankCounter++
-        rankMap[currScore] = rankCounter
-      }
-      if (score === currScore) {
-        return rankCounter
-      }
-    }
+    const sortedRankings = rankings.filter((ranking, idx) => rankings.indexOf(ranking) === idx)
+      .sort((a, b) => b - a)
+    return sortedRankings.indexOf(score) + 1
   }
 
   let lastInsertedIndex = -1
