@@ -14,9 +14,6 @@ function countCharacters(str) {
       charCount[char] = 1;
     }
   }
-  
-  //
-  
   return charCount;
 }
 
@@ -59,14 +56,11 @@ function steadyGene(gene) {
   
   for (let windowSize=1; windowSize<=gene.length; windowSize++) {
     for(let start = 0; start <= gene.length - windowSize; start += 1) {
-      // const before = gene.substring(0, start)
-      // const after = gene.substring(start+windowSize)
       const sub = gene.substring(start, start + windowSize)
       const counts = countCharacters(sub)
       const replaceStr = canReplace(totalCounts, counts, gene.length, sub.length)
       if (replaceStr) {
         return replaceStr.length
-      // if (canBeSteadied(counts)) {
       }
     }
   }
