@@ -46,18 +46,18 @@ function generateSubsequences(str, length) {
   
   const result = [];
   
-  function backtrack(start, current) {
+  function backtrack(current, start) {
     if (current.length === length) {
       result.push(current);
       return;
     }
     
     for (let i = start; i < str.length; i++) {
-      backtrack(i + 1, current + str[i]);
+      backtrack(current + str[i], i + 1)
     }
   }
   
-  backtrack(0, "");
+  backtrack('', 0);
   return result;
 }
 
