@@ -60,9 +60,9 @@ function generateSubsequences(str, length) {
   backtrack('', 0);
   return result;
 }
-
+console.log(longestCommonSubstring("1234567", "1234568")) // SFPO
 //console.log(longestCommonSubstring("XSIFVPO", "SVFPLOY")) // SFPO
-console.log(longestCommonSubstring("ABCD", "ACBD")); // "AD"
+//console.log(longestCommonSubstring("ABCD", "ACBD")); // "AD"
 // console.log(longestCommonSubstring("XYZ", "ABC")); // ""
 // console.log(longestCommonSubstring("ABCDEF", "AFEDCB")); // "A"
 // console.log(longestCommonSubstring("HELLO", "WORLD")); // ""
